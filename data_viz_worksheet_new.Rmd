@@ -2,26 +2,30 @@
 title: "Introduction to Data Visualization with R"
 author: "Martin Barron"
 date: "October 24, 2017"
-output: ioslides_presentation
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Setup
+## Introduction
+
+### Materials and Set-Up
 
 1. Please visit [link](https://github.com/m-barron/data_visualization_workshop) to download the workshop materials.
 2. Extract the zip file.
 3. Start up R-studio.
 4. Install necessary packages:
 
-```{r Install Packages, eval=FALSE}
-install.packages("tidyverse") # Installs ggplot2 + some other useful packages
+```{r Install Packages}
+#install.packages("tidyverse") # Installs ggplot2 + some other useful packages
 library(tidyverse) # Loads ggplot2 + some other useful packages
 ```
 
-## Workshop Structure:
+### Workshop Overview
+
+Workshop Structure:
 
 * Each core concept in ggplot2 will be introduced with examples. 
 * There will be short exercises after each concept. Collaboration is encouraged when working on the exercises. 
@@ -31,35 +35,26 @@ This is an introductory data visualization workshop:
 * R itself will not be taught, though feel free to ask for help.
 * We will focus on the `ggplot2` package. Other packages will not be covered.  
 
+***
 
-## Goal 
+## Objective
 
-```{r goal plot, echo=FALSE, warning=FALSE}
-options(scipen=999)  # turn-off scientific notation like 1e+48
-library(ggplot2)
-data("midwest", package = "ggplot2")
-gg <- ggplot(midwest, aes(x=area, y=poptotal)) + 
-  geom_point(aes(col=state, size=popdensity)) + 
-  geom_smooth(method="loess", se=F) + 
-  xlim(c(0, 0.1)) + 
-  ylim(c(0, 500000)) + 
-  labs(subtitle="Area Vs Population", 
-       y="Population", 
-       x="Area", 
-       title="Scatterplot", 
-       caption = "Source: midwest") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  theme_bw()
+Goal: By the end of the workshop you will be able to reproduce the following graphic (Displayed in Slides)
 
-plot(gg)
+This was created using the midwest data set included in ggplot2, which contains demographic information for midwest counties from five states. Before we proceed lets load the midwest data into the working environment. 
+
+```{r Load Data}
+data("midwest", package = "ggplot2") # Load the data
+head(midwest) # View data
 ```
 
+*** 
 
-## `ggplot2` 
+## ggplot2
 
 `ggplot2` entails a grammer of graphics. That is, every graph is built from the same few parts.
 
-## Strengths of `ggplot2`
+##### Strengths of ggplot2
 
 1. It is easy to get a good looking plot.
 2. Very flexible. 
@@ -68,13 +63,14 @@ plot(gg)
 5. Multi-dimensional approach is straight forward allowing many variables to be visualized at once. 
 6. The default colors are equally spaced on the color wheel. 
 
-## `ggplot2` does not do
+##### ggplot2 does not do
  
 1. 3-dimensional graphics - `rgl`
 2. Graph theory graphs - `igraph`
 3. Interactive graphics - `plotly`
 
-## Key ideas of ggplot2:
+
+##### Key ideas of ggplot2:
 
 1. Aesthetics 
 2. Layers & geoms (geometric objects)
@@ -83,7 +79,7 @@ plot(gg)
 
 ## Aesthetics 
 
-An aesthetic is something you map data to and can see in `ggplot`, including:
+An aesthetic is something you map data to and can see in a `ggplot`, including:
 
 * Position (X and Y axis).
 * Color (Outside color).
@@ -92,13 +88,13 @@ An aesthetic is something you map data to and can see in `ggplot`, including:
 * Line type.
 * Size of points. 
 
-## Simple Plot
-
+Lets try creating a simple plot by mapping two of our variables to the X and Y axis, that is mapping the area of each county, `area`, to the X axis and the total population of each county, `poptotal` to the Y axis. Note that we assign the X and Y axis inside the `aes()` function which is used to specify any aesthetics. 
 ```{r plot 2}
 ggplot(midwest, aes(x=area, y=poptotal)) # Create ggplot2, 
 
 ```
 
+As we can see this creates a blank ggplot. This is because we have only told `ggplot2` what variables to map to the X and Y axis. `ggplot2` does not assume the type of plot we want to draw, e.g. scatter plot, line chart etc. We must tell `ggplot2` what type of plot to draw using geoms. 
 
 ## Layers and Geoms 
 
@@ -109,19 +105,34 @@ Geoms are geometric objects, the actual marks on the plot, which include:
 * Boxplots - (`geom_boxplot`)
 * and many more.
 
-## Scatter Plot 
+To see all available geoms you can type:
 
+```{r see geoms}
+help.search("geom_", package = "ggplot2")
+```
+
+
+###### Scatter Plot 
+
+Now that we know about geoms, lets turn our current plot into a scatter plot by using `geom_point`:
 
 ```{r Scatter Plot}
 ggplot(midwest, aes(x=area, y=poptotal)) + # Create ggplot2, x-axis area, y-axis poptotal
-  geom_point() # Use geom point to add points
+  geom_point()  # Use geom point to add points
 ```
 
-## Pipes
+This creates a basic scatter plot with each point representing a county. There are still several improvements which can be made to the plot, including adding a plot title, meaningful axis labels, and removal of the grid/gray background (does not serve a purpose, just distracts viewer).
 
-To add elements to a `ggplot` we use `+` at the end of each line. This is called a pipe, which is simply an operator that sends what comes before to what comes after. 
+##### Pipes
+To add elements to a ggplot we use `+` at the end of each line. This is called a pipe, which is simply an operator that sends what comes before to what comes after. 
 
-## Regression Line (Multiple Geoms)
+
+##### Multiple Geoms
+
+###### Regression Line
+
+A key feature of `ggplot2` is that plots can have more than one geom. One feature our plot could use is a regression line. To do this we first predict the population total using a linear model.
+
 
 ```{r regression line}
 midwest$pop_pred <- predict(lm(poptotal ~ area, data=midwest))
@@ -131,8 +142,9 @@ ggplot(midwest, aes(x=area, y=poptotal)) + # Create ggplot2, x-axis area, y-axis
 ```
 
 
-## Smoothers
+###### Smoothers
 
+Now, let us try adding a smoothing layer to our plot. This is done using `geom_smooth(method="lm")`, which fits a linear model to the data, `lm` and plots the line of best fit. `geom_smooth()` also generates a confidence band around the fitted line. 
 
 ```{r Add smooth}
 ggplot(midwest, aes(x=area, y=poptotal)) + # Create ggplot2, x-axis area, y-axis poptotal.
@@ -140,7 +152,10 @@ ggplot(midwest, aes(x=area, y=poptotal)) + # Create ggplot2, x-axis area, y-axis
   geom_smooth(method="lm") # Use geom_smooth to add a line of best fit.
 ```
 
-## Assign Plots
+
+##### Assign Plots
+
+We can save ggplot objects for plotting or modification later by assigning them: 
 
 ```{r assign plot}
 
@@ -149,13 +164,16 @@ g_1 <- ggplot(midwest, aes(x=area, y=poptotal)) + # Create ggplot2, x-axis area,
   geom_smooth(method="lm") # Use geom_smooth to add a line of best fit.
 ```
 
-## Assign Plots
+We can then plot the object using:
 
 ```{r plot objects}
 g_1
 ```
 
-## Add text (labelling points)
+
+###### Add text (labelling points)
+
+Let us just consider the counties in Ohio:
 
 ```{r IL plot}
 g_2 <- ggplot(subset(midwest, state %in% "OH"), # Select subset of data, only OH
@@ -164,15 +182,14 @@ g_2 <- ggplot(subset(midwest, state %in% "OH"), # Select subset of data, only OH
 g_2
 ```
 
-## Add text
+Now suppose we are interested in displaying what each of the points represent, this can be done using `geom_text` which can used to add labels to the plots. 
 
 ```{r Label Plot}
 g_3 <- g_2 + geom_text(aes(label=county),size=2)
 g_3
 ```
 
-## `ggrepel`
-
+Many of the labels in the previous plot can be hard to read due to them overlapping other points. One solution to this is the `ggrepel` package, which can be used to create some distance between the points and labels.
 ```{r ggrepel}
 #install.packages("ggrepel")
 library("ggrepel")
@@ -180,20 +197,28 @@ g_2 +
   geom_text_repel(aes(label=county), size = 2)
 ```
 
-## Mapping variables to other aesthetics
+### Mapping variables to other aesthetics
+
+Until know we have only mapped variables to the X and Y axis. Assigning variables to other aesthetics is done in a similar fashion. Here we can map the population density, `popdensity` to size and the state, `state`, to the color of each point. 
 
 ```{r other mappings}
 ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) + # Create ggplot2, x-axis area, y-axis poptotal.
   geom_point() # Use geom point to add points.
 ```
 
-## Aesthetic mapping v aesthetic assignment
 
+
+We are now displaying four variables in a single plot (Not bad). 
+
+### Aesthetic mapping v aesthetic assignment
+
+Note that variables are mapped to aesthetics inside the `aes()` function. Fixed aesthetics are set outside the `aes()` call. For example, if we simply wanted to color all points blue, we would use the following:
 
 ```{r set aesthetics}
 ggplot(midwest, aes(x=area, y=poptotal ,shape=state)) + 
   geom_point(color="blue") # Use geom point to add points.
 ```
+
 
 ## Exercises 1 
 
@@ -205,7 +230,6 @@ ggplot(midwest, aes(x=area, y=poptotal ,shape=state)) +
 * Map the size of the points to total population, "poptotal"
 * Add a trend line to the plot
 
-
 ## Statistical Transformation
 
 While some plot types (e.g. scatter plots) do not require statistical transformations - i.e. each point is plotted at the X and Y coordinates corresponding to the original value. Many other plot types (e.g. box plots, histograms, prediction lines etc.) require the data to be transformed prior to plotting. 
@@ -213,37 +237,40 @@ While some plot types (e.g. scatter plots) do not require statistical transforma
 * Boxplot - The Y values must be transformed to the median, first and third quartiles etc. 
 * Smoothers - The Y values must be transformed into predicted values. 
 
-## Statistical Transformation
+Thankfully, `ggplot2` will handle many of the statistical transformations internally meaning we do not have to carry out much pre-processing of the data. 
+
+Each geom has a default statistic which it uses. For example the default statistic for a `geom_histogram` is `stat_bin`, which, unsurprisingly, counts the number of entries in that fall into each bin. 
 
 ```{r Histogram}
 ggplot(midwest, aes(x=area)) + # Only need to set X axis for histogram
   geom_histogram() # Call histogram 
 ```
 
-## Statistical Transformation
+To change the arguments to the stat functions, such as `binwidth` for our histogram, we can pass the arguments through the geom function. We first call the stat we are using `stat = "bin"`, we can then pass the arguments to the function, in this case `binwidth=0.01`.
+
 ```{r Histogram bin}
 ggplot(midwest, aes(x=area)) + # Only need to set X axis for histogram
   geom_histogram(stat = "bin" , binwidth=0.001) # Call histogram 
 ```
 
-## Changing the Statistical Transformation
+#### Changing the statistical transformation
 
+Sometimes the default statistic used by the geom is not what you need. This is often the case for pre-summarized data. For example, if instead of working with raw data, we are using pre-calculated mean values. Lets first calculate the mean population density for each state.
 ```{r bar chart}
 pop.sum <- aggregate(midwest["popdensity"], midwest["state"], FUN=mean)
 head(pop.sum)
 
 ```
 
+Here we have summarized the data prior to creating the plot.
 
-## Changing the Statistical Transformation
-
-
+If we try and create a bar chart using the summarized data, the plot will not run correctly:
 ```{r bar chart 2, eval=FALSE}
 ggplot(housing.sum, aes(x=State, y=Home.Value)) + 
   geom_bar()
 ```
 
-## Changing the Statistical Transformation
+This is because `geom_bar` uses `stat_count` as it's default statistic, however there is now only a single observation per sample. We can get around this by telling `geom_bar` to use a different statistical transformation function. In this case we want to use `identity` to use the exact values themselves.  
 
 ```{r fixed bar}
 ggplot(pop.sum, aes(x=state, y=popdensity)) + 
@@ -251,8 +278,7 @@ ggplot(pop.sum, aes(x=state, y=popdensity)) +
 
 ```
 
-
-## Exercises 2
+### Exercises 2
 
 1. Create a scatter plot with percent college educated, "percollege", on the X axis and percent below the poverty line, "percbelowpoverty" on Y axis. 
 2. Overlay a smoothing line on top of the scatter plot using `geom_smooth` with a glm fit. Hint: see ?geom_smooth
@@ -260,23 +286,24 @@ ggplot(pop.sum, aes(x=state, y=popdensity)) +
 
 ## Scales 
 
+Aesthetic mapping, as we have been doing with `aes()` only tells `ggplot2` that a variable should be mapped to an aesthetic, it does not specify how that should be done. Earlier when we mapped "" to `shape` and "" to `color` we did not specify what colors or shapes to use. Describing what colors/shapes/sizes etc. to use if done by modifying the corresponding `scale` in `ggplot2` which include:
+
 * Position
 * Color and fill
 * Size
 * Shape
 * Line type
 
+We can modify scales using a series of functions with a `scale_<aesthetic>_<type>` naming scheme. 
 
-## Common Scale Arguments
+Common scale arguments in `ggplot2` are:
 
 * Name - Control the legend or axis title.
 * Limits - The minimum and maximum of the scale.
 * Breaks - The points along the scale where labels should appear.
 * labels - The labels which appear at each break. 
 
-
-## Scales
-
+Lets return to our scatter plot and add a title and some labels to our plot. We can also add axis limits to the plot.
 ```{r scale change example}
 ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) + # Create ggplot2, x-axis area, y-axis poptotal.
   geom_point() +# Use geom point to add points.
@@ -297,7 +324,7 @@ The themes in `ggplot2` handles the non-data plot elements, These include,
 * Facet label background
 * Legend appearance
 
-## Black and White Theme
+There are several default themes included in `ggplot2`. 
 
 ```{r BW Theme}
 ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) + # Create ggplot2, x-axis area, y-axis poptotal.
@@ -306,15 +333,13 @@ ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) +
 ```
 
 
-## Classic Theme
-
 ```{r Classic Theme}
 ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) + # Create ggplot2, x-axis area, y-axis poptotal.
   geom_point() +# Use geom point to add points.
   theme_classic()
 ```
 
-## Nice Plots
+We can also use theme to override specific theme elements. The following settings remove grid lines which usually just serve to clutter a plot with "non-data-ink". 
 
 ```{r Nice Plots}
 ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) + # Create ggplot2, x-axis area, y-axis poptotal.
@@ -325,22 +350,19 @@ ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) +
 
 ## Facets
 
-Facets are a useful aspect in ggplot which allow us to use a paneled display with the key idea being to display different subsets of the data. These are often referred to as small multiples. There are two options in ggplot for faceting your data:
+Facets are a useful aspect in ggplot which allow us to use a paneled display with the key idea being to display different subsets of the data. These are often called small multiples. There are two options in ggplot for faceting your data:
 
 1. `facet_wrap` - Subsets are defined on a single variable.
 2. `facet_grid` - Subsets are defined using two grouping variables. 
 
-
-## Facets
-
+To display how this works, consider the following plot:
 ```{r facet pre}
 ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) + # Create ggplot2, x-axis area, y-axis poptotal.
   geom_point() # Use geom point to add points.
 
 ```
 
-
-## `facet_wrap`
+Suppose however we want to see state of them separately while still being able to compare them, we can then use `facet_wrap`. 
 
 ```{r facet_wrap}
 ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) + # Create ggplot2, x-axis area, y-axis poptotal.
@@ -348,16 +370,16 @@ ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) +
   facet_wrap(~state) # Use state for faceting
 ```
 
-## `facet_grid`
-
+If we wanted to split the groups based on whether they are from a metropolitan area as well we can use `facet_grid`. 
 ```{r facet_grid}
 ggplot(midwest, aes(x=area, y=percbelowpoverty, size=popdensity, color=state)) + # Create ggplot2, x-axis area, y-axis poptotal.
   geom_point() + # Use geom point to add points. 
   facet_wrap(inmetro~state) # Use state for faceting
 ```
 
-
 ## Putting it all together
+
+Final exercise:
 
 Re-create the plot from start of tutorial
 
@@ -367,10 +389,10 @@ Some hints:
 2. Set X and Y limits.
 3. Check `?labs`
 
-
 ## Summary
 
 `ggplot2` is an easy to use but powerful data visualization tool. It allows us to break all our plots down into a set of components and think about plotting in many dimensions for a single graph. 
+
 
 
 
