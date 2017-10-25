@@ -1,0 +1,502 @@
+---
+title: "Introduction to Data Visualization with R"
+author: "Martin Barron"
+date: "October 24, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+## Introduction
+
+### Materials and Set-Up
+
+1. Please visit [link](www.github) to download the workshop materials.
+2. Extract the zip file.
+2. Start up R-studio.
+3. Install necessary packages:
+
+```{r Install Packages}
+install.packages("tidyverse") # Installs ggplot2 + some other useful packages
+library(tidyverse) # Loads ggplot2 + some other useful packages
+```
+
+### Workshop Overview
+
+Workshop Structure:
+
+* Each core concept in ggplot2 will be introduced with examples. 
+* There will be short exercises after each concept. Collaboration is encouraged when working on the exercises. 
+
+This is an introductory data visualization workshop:
+
+* R itself will not be taught, though feel free to ask for help.
+* We will focus on the `ggplot2` package. Other packages will not be covered.  
+
+***
+
+## Objective
+
+Goal: By the end of the workshop you will be able to reproduce the following graphic:
+
+
+
+
+This was created using the midwest data set included in ggplot2, which contains demographic information for midwest counties from five states. Before we proceed lets load the midwest data into the working enviornment. 
+
+```{r Load Data}
+data("midwest", package = "ggplot2") # Load the data
+head(midwest) # View data
+```
+
+*** 
+
+## `ggplot2` 
+
+`ggplot2` entails a grammer of graphics. That is, every graph is built from the same few parts.
+
+##### Strengths of `ggplot2`
+
+1. It is easy to get a good looking plot.
+2. Very flexible. 
+3. A lot of the data processing is taken care of behind the scenes.
+4. There is a clear syntax. 
+5. Multi-dimensional approach is straight forward allowing many variables to be visualized at once. 
+6. The default colors are equally spaced on the color wheel. 
+
+##### `ggplot2` does not do
+ 
+1. 3-dimensional graphics - `rgl`
+2. Graph theory graphs - `igraph`
+3. Interactive graphics - `plotly`
+
+
+##### Key ideas of ggplot2:
+
+1. Aesthetics 
+2. Layers & geoms (geometric objects)
+3. Facets
+4. Themes
+
+
+
+## Aesthetics 
+
+An aesthetic is something you map data to and can see in `ggplot`, including:
+
+* Position (X and Y axis).
+* Color (Outside color).
+* Fill (Inside color).
+* Shape of points.
+* Line type.
+* Size of points. 
+
+Lets try creating a simple plot by mapping two of our variables to the X and Y axis, that is mapping the area of each county, `area`, to the X axis and the total population of each county, `poptotal` to the Y axis. Note that we assign the X and Y axis inside the `aes()` function which is used to specify any aesthetics. 
+```{r plot 2}
+ggplot(midwest, aes(x=area, y=poptotal)) # Create ggplot2, 
+
+```
+
+As we can see this creates a blank ggplot. This is because we have only told `ggplot2` what variables to map to the X and Y axis. `ggplot2` does not assume the type of plot we want to draw, e.g. scatter plot, line chart etc. We must tell `ggplot2` what type of plot to draw using geoms. 
+
+## Layers and Geoms 
+
+Geoms are geometric objects, the actual marks on the plot, which include:
+
+* Points - (`geom_point`) For scatter plots, dot plots, ...
+* Lines - (`geom_line`) For time series, trend lines, ...
+* Boxplots - (`geom_boxplot`)
+* and many more.
+
+To see all available geoms you can type:
+
+```{r see geoms}
+help.search("geom_", package = "ggplot2")
+```
+
+
+###### Scatter Plot 
+
+Now that we know about geoms, lets turn our current plot into a scatter plot by using `geom_point`:
+
+```{r Scatter Plot}
+ggplot(midwest, aes(x=area, y=poptotal)) + # Create ggplot2, x-axis area, y-axis poptotal
+  geom_point() + # Use geom point to add points
+```
+
+This creates a basic scatter plot with each point representing a county. There are still several improvements which can be made to the plot, including adding a plot title, meaniningful axis labels, and removal of the grid/gray background (does not serve a purpose, just distracts viewer).
+
+##### Pipes
+To add elements to a ggplot we use `+` at the end of each line. This is called a pipe, which is simply an operator that sends what comes before to what comes after. 
+
+
+##### Multiple Geoms
+
+###### Regression Line
+
+A key feature of `ggplot2` is that plots can have more than one geom. One feature our plot could use is a regression line. 
+
+
+
+###### Smoothers
+
+Now, let us try adding a smoothing layer to our plot. This is done using `geom_smooth(method="lm")`, which fits a linear model to the data, `lm` and plots the line of best fit. `geom_smooth()` also generates a confidence band arounf the fitted line. 
+
+```{r Add smooth}
+ggplot(midwest, aes(x=area, y=poptotal)) + # Create ggplot2, x-axis area, y-axis poptotal.
+  geom_point() + # Use geom point to add points.
+  geom_smooth(method="lm") # Use geom_smooth to add a line of best fit.
+```
+
+
+##### Assign Plots
+
+We can save ggplot objects for plotting or modification later by assigning them: 
+
+```{r assign plot}
+
+g_1 <- ggplot(midwest, aes(x=area, y=poptotal)) + # Create ggplot2, x-axis area, y-axis poptotal.
+  geom_point() + # Use geom point to add points.
+  geom_smooth(method="lm") # Use geom_smooth to add a line of best fit.
+```
+
+We can then plot the object using:
+
+```{r plot objects}
+g_1
+```
+
+
+###### Add text (labelling points)
+
+Let us just consider the counties in Illinois:
+
+```{r IL plot}
+g_2 <- ggplot(subset(midwest, state %in% "IL"), # Select subset of data, only IL
+              aes(x=area, y=poptotal)) + # Create ggplot2, x-axis area, y-axis poptotal.
+  geom_point() # Use geom point to add points.
+g_2
+```
+
+Now suppose we are interested in displaying what each of the points represent, this can be done using `geom_text` which can used to adde labels to the plots. 
+
+```{r Label Plot}
+g_3 <- g_2 + geom_text(aes(label=county),size=3)
+g_3
+```
+
+Many of the labels in the previous plot can be hard to read due to them overlapping other points. One solution to this is the `ggrepel` package, which can be used to create some distance between the points and labels.
+```{r ggrepel}
+install.packages("ggrepel")
+library("ggrepel")
+g_2 + 
+  geom_text_repel(aes(label=county), size = 3)
+```
+
+### Mapping variables to other aesthetics
+
+Until know we have only mapped variables to the X and Y axis. Assigning variables to other aesthetics is done in a similar fashion. Here we can map the population density, `popdensity` to color and the state, `state`, to the shape of each point. 
+
+```{r other mappings}
+ggplot(midwest, aes(x=area, y=poptotal ,shape=state, color=popdensity)) + # Create ggplot2, x-axis area, y-axis poptotal.
+  geom_point() # Use geom point to add points.
+```
+
+We are now displaying four variables in a single plot (Not bad). 
+
+### Aesthetic mapping v aesthetic assignment
+
+Note that variables are mapped to aesthetics inside the `aes()` function. Fixed aesthetics are set outside the `aes()` call. For example, if we simply wanted to color all points blue, we would use the following:
+
+```{r set aesthetics}
+ggplot(midwest, aes(x=area, y=poptotal ,shape=state)) + 
+  geom_point(color="blue") # Use geom point to add points.
+```
+
+
+## Exercises 1 
+
+* Create a scatter plot with "" on X axis and "" on Y axis. 
+* Color the points red
+* Map the color of the points to ""
+* Map the shape of the points to ""
+* Make the points bigger by setting size to ""
+* Map the size of the points to ""
+* Add a trend line to the plot
+
+## Exercises 2
+
+* Create a " " plot showing relationship between "" and ""
+* map 
+
+
+## Statistical Transformation
+
+While some plot types (e.g. scatter plots) do not require statistical transformations - i.e. each point is plotted at the X and Y coordinates corresponding to the original value. Many other plot types (e.g. box plots, histograms, prediction lines etc.) require the data to be transformed prior to plotting. 
+
+* Boxplot - The Y values must be transformed to the median, first and third quartiles etc. 
+* Smoothers - The Y values must be transformed into predicted values. 
+
+Thankfully, `ggplot2` will handle many of the statistical transformations internally meaning we do not have to carry out much pre-processing of the data. 
+
+Each geom has a default statistic which it uses. For example the default statistic for a `geom_histogram` is `stat_bin`, which, unsuprisingly, counts the number of entries in that fall into each bin. 
+
+```{r Histogram}
+ggplot(midwest, aes(x=area)) + # Only need to set X axis for histogram
+  geom_histogram() # Call histogram 
+```
+
+To change the arguments to the stat functions, such as `binwidth` for our histogram, we can pass the arguments through the geom function. We first call the stat we are using `stat = "bin"`, we can then pass the arguments to the function, in this case `binwidth=0.01`.
+
+```{r Histogram bin}
+ggplot(midwest, aes(x=area)) + # Only need to set X axis for histogram
+  geom_histogram(stat = "bin" , binwidth=0.001) # Call histogram 
+```
+
+#### Changing the statistical transformation
+
+Sometimes the default statistic used by the geom is not what you need. This is often the case for pre-summarized data. For example, if instead of working with raw data, we are using pre-calculated mean values. Lets first create a bar chart using raw data:
+
+```{r bar chart}
+
+
+```
+
+Now suppose we summarize the data prior to creating a bar chart:
+
+```{r changing the default stat}
+housing.sum <- aggregate(housing["Home.Value"], housing["State"], FUN=mean)
+rbind(head(housing.sum), tail(housing.sum))
+
+```
+
+If we try and create a bar chart using the summarized data, the plot will not run correctly:
+```{r bar chart, eval=FALSE}
+ggplot(housing.sum, aes(x=State, y=Home.Value)) + 
+  geom_bar()
+```
+
+This is because `geom_bar` uses `stat_count` as it's default statistic, however there is now only a single observation per sample. We can get around this by telling `geom_bar` to use a different statistical transformation function. In this case we want to use `identity` to use the exact values themselves.  
+
+```{r fixed bar}
+ggplot(housing.sum, aes(x=State, y=Home.Value)) + 
+  geom_bar(stat="identity")
+
+```
+
+### Exercises 3
+
+
+
+## Scales 
+
+Aesthetic mapping, as we have been doing with `aes()` only tells `ggplot2` that a variable should be mapped to an aesthetic, it does not specify how that should be done. Earlier when we mapped "" to `shape` and "" to `color` we did not specify what colors or shapes to use. Describing what colors/shapes/sizes etc. to use if done by modifying the corresponding `scale` in `ggplot2` which include:
+
+* Position
+* Color and fill
+* Size
+* Shape
+* Line type
+
+We can modify scales using a series of functions with a `scale_<aesthetic>_<type>` naming scheme. 
+
+Common scale arguments in `ggplot2` are:
+
+* Name - Control the legend or axis title.
+* Limits - The minimum and maximum of the scale.
+* Breaks - The points along the scale where labels should appear.
+* labels - The labels which appear at each break. 
+
+To add a title to our plot and change ...
+```{r scale change example}
+
+
+```
+
+
+## Themes 
+
+The themes in `ggplot2` handles the non-data plot elements, These include,
+
+* Axis Labels
+* Plot background
+* Facet label background
+* Legend apperance
+
+There are several default themes included in `ggplot2`. 
+
+```{r BW Theme}
+
+
+```
+
+
+```{r Classic Theme}
+
+```
+
+We can also use theme to override specific theme elements. The following settings remove the grey background and grid lines which usually just serve to clutter a plot with "non-data-ink". 
+
+```{r Nice Plots}
+
+```
+
+## Facets
+
+Facets are a useful aspect in ggplot which allow us to use a paneled display with the key idea being to display different subsets of the data. These are often refered to as small multiples. There are two options in ggplot for faceting your data:
+
+1. `facet_wrap` - Subsets are definied on a single variable.
+2. `facet_grid` - Subsets are definied using two grouping variables. 
+
+To display how this works, consider the following plot:
+```{r facet pre}
+
+
+```
+
+Suppose however we want to see each of them separately while still being able to compare them, we can then use `facet_wrap`. 
+
+```{r facet_wrap}
+
+```
+
+If we wanted to split the groups based on "" as well we can use `facet_grid`. 
+```{r facet_grid}
+
+```
+
+## Putting it all together
+
+Final exercise:
+
+
+
+
+
+# Results code
+
+
+
+
+## Summary
+
+`ggplot2` is an easy to use but powerful data visualization tool. It allows us to break all our plots down into a set of components and think about plotting in many dimesnions for a single graph. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
