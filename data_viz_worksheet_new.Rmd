@@ -173,9 +173,9 @@ g_1
 
 ###### Add text (labelling points)
 
-Let us just consider the counties in Ohio:
+Let us just consider the counties in Ohio, and plot the area against the percentage below poverty, "percbelowpoverty"
 
-```{r IL plot}
+```{r OH plot}
 g_2 <- ggplot(subset(midwest, state %in% "OH"), # Select subset of data, only OH
               aes(x=area, y=percbelowpoverty)) + # Create ggplot2, x-axis popadults, y-axis poptotal.
   geom_point() # Use geom point to add points.
@@ -266,7 +266,7 @@ Here we have summarized the data prior to creating the plot.
 
 If we try and create a bar chart using the summarized data, the plot will not run correctly:
 ```{r bar chart 2, eval=FALSE}
-ggplot(housing.sum, aes(x=State, y=Home.Value)) + 
+ggplot(pop.sum, aes(x=state, y=popdensity)) + 
   geom_bar()
 ```
 
@@ -283,6 +283,8 @@ ggplot(pop.sum, aes(x=state, y=popdensity)) +
 1. Create a scatter plot with percent college educated, "percollege", on the X axis and percent below the poverty line, "percbelowpoverty" on Y axis. 
 2. Overlay a smoothing line on top of the scatter plot using `geom_smooth` with a glm fit. Hint: see ?geom_smooth
 3. Overlay a smoothing line on top of the scatter plot using geom_line. Hint: change the statistical transformation.
+4. Create a bar chart comparing the number of counties that are in a metropolitan area, "inmetro", for each state, "state". Hint: Set position="dodge", convert inmetro to a factor using as.factor(), use "fill" to separate the groups. 
+
 
 ## Scales 
 
